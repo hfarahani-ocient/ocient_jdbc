@@ -6,8 +6,10 @@ build-deps:
   tags:
     #gitlab runs on a shared runner without this and you lose network access
     - lightweight
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    #force centos-build2
+    - gpg-signing
+  #rules:
+  #  - if: '$CI_COMMIT_BRANCH == "master"'
   script:
     #gitlab clones the repo into the same directory that you're in
     #check buildtool dependencies exist
@@ -63,12 +65,16 @@ build-deps:
     - echo $JDBC_VERSION
     - JAR_FILE=target/ocient-jdbc4-${JDBC_VERSION}-jar-with-dependencies.jar
     # debug
-    #- JAR_DIR=v${JDBC_VERSION}-TEST-DEPLOY
-    - JAR_DIR=v${JDBC_VERSION}
+    - JAR_DIR=v${JDBC_VERSION}-TEST-DEPLOY
+    #- JAR_DIR=v${JDBC_VERSION}
     - mkdir $JAR_DIR
     - cp $JAR_FILE $JAR_DIR
     - sudo chmod -R 777 $JAR_DIR
     - sudo cp -r $JAR_DIR /mnt/ocarchive1/www/ocientrepo/java/jdbc/
+
+    #just a test, only does signing
+    - mvn verify -gs mavenGlobalSettings.xml -s ${DEPLOY_SETTINGS_XML}
+    - ls target
 
     # keytool/jarsigner are horrible and require a lot of setup
     # convert cert/keypair to  pkcs12
